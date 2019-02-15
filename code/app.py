@@ -22,6 +22,9 @@ app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(seconds=900)
 # Turn off the Flask-SQLAlchemy modification tracker.
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Allow the Flask app to see errors from other modules.
+app.config['PROPAGATE_EXCEPTIONS'] = True
+
 # Database URI
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///things.db')
 

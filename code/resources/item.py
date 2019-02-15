@@ -62,7 +62,7 @@ class Item(Resource):
             # Create it.
             store = StoreModel.find_by_name(data['store_name'])
             if not store:
-                return {'error': "A store with the name '{}' was not found".format(data['store_name'])}, 404
+                return { 'error': "A store with the name '{}' was not found".format(data['store_name']) }, 404
 
             new_item = ItemModel(name, data['price'], store.id)
 
@@ -87,4 +87,4 @@ class Item(Resource):
 class ItemList(Resource):
     @jwt_required()
     def get(self):
-        return {'items': list(map(lambda item: item.json(), ItemModel.query.all()))}
+        return {'items': list(map(lambda item: item.json(), ItemModel.find_all()))}

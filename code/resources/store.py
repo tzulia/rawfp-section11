@@ -41,4 +41,4 @@ class StoreList(Resource):
 
     @jwt_required()
     def get(self):
-        return {'stores': list(map(lambda store: store.json(), StoreModel.query.all()))}
+        return {'stores': list(map(lambda store: store.json(), StoreModel.find_all()))}

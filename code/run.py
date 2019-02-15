@@ -6,4 +6,5 @@ from db import db
 def create_db_tables():
     db.create_all()
 
+
 db.init_app(app)
