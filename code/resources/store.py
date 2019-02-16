@@ -10,7 +10,7 @@ class Store(Resource):
     def get(self, name):
         store = StoreModel.find_by_name(name)
         if store:
-            return store.json()
+            return store.json(-1)
 
         return {'message': 'Store not found'}, 404
 
@@ -41,4 +41,6 @@ class StoreList(Resource):
 
     @jwt_required
     def get(self):
-        return {'stores': list(map(lambda store: store.json(), StoreModel.find_all()))}
+        return {
+            'stores': [store.json() for store in StoreModel.find_all()]
+        }

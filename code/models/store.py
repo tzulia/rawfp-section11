@@ -12,8 +12,19 @@ class StoreModel(db.Model):
     def __init__(self, name):
         self.name = name
 
-    def json(self):
-        return {'name': self.name, 'items': list(map(lambda item: item.json(), self.items.all()))}
+    def json(self, limit=10):
+        """
+            This function returns the StoreModel object in json format.
+            Normally it only fetches the first 10 items in the store, though
+            that can be overridden by passing in -1 in the first argument.
+
+            ::params limit:: The amount of items to fetch from the DB.
+        """
+        return {
+            'id': self.id,
+            'name': self.name,
+            'items': [item.json() for item in self.items.limit(limit).all()]
+        }
 
     @classmethod
     def find_by_name(cls, name):
@@ -22,7 +33,7 @@ class StoreModel(db.Model):
     @classmethod
     def find_all(cls):
         return cls.query.all()
-    
+
     def save_to_db(self):
         db.session.add(self)
         db.session.commit()

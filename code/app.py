@@ -1,11 +1,8 @@
-import datetime
 import os
 
 from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
-
-from models.user import UserModel
 
 from resources.user import UserRegister
 from resources.item import Item, ItemList
@@ -16,9 +13,6 @@ app = Flask(__name__)
 app.secret_key = '28dd16028dd1602e2b7b92b2b7b92b79e7e40189df5f30e7e40189df5f30'
 
 l_db = 'sqlite:///data.db'
-
-# Settings JWT Token to expire after 15 minutes.
-app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(seconds=900)
 
 # Turn off the Flask-SQLAlchemy modification tracker.
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -31,20 +25,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', l_db)
 
 api = Api(app)
 jwt = JWTManager(app)
-
-
-@jwt.user_claims_loader
-def add_claims_to_jwt(identity):
-    user = UserModel.find_by_id(identity)
-
-    if user and user.is_admin:
-        return {
-            'is_admin': True
-        }
-
-    return {
-        'is_admin': False
-    }
 
 
 api.add_resource(Item, '/item/<string:name>')
