@@ -7,7 +7,7 @@ from flask_jwt_extended import JWTManager
 from resources.user import UserRegister
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
-from resources.user import User, UserList, UserLogin
+from resources.user import User, UserList, UserLogin, TokenRefresh
 
 app = Flask(__name__)
 app.secret_key = '28dd16028dd1602e2b7b92b2b7b92b79e7e40189df5f30e7e40189df5f30'
@@ -35,6 +35,7 @@ api.add_resource(StoreList, '/stores')
 
 api.add_resource(UserLogin, '/auth/login')
 api.add_resource(UserRegister, '/auth/register')
+api.add_resource(TokenRefresh, '/auth/refresh')
 api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserList, '/users')
 
