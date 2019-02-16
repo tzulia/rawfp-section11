@@ -1,4 +1,7 @@
+import functools
+
 from db import db
+from flask_jwt_extended import get_jwt_identity
 
 
 class UserModel(db.Model):
@@ -7,15 +10,18 @@ class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), nullable=False)
     password = db.Column(db.String(80), nullable=False)
+    is_admin = db.Column(db.Boolean)
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, is_admin):
         self.username = username
         self.password = password
+        self.is_admin = is_admin
 
     def json(self):
         return {
             'id': self.id,
-            'username': self.username
+            'username': self.username,
+            'is_admin': self.is_admin
         }
 
     @classmethod
@@ -40,3 +46,17 @@ class UserModel(db.Model):
     def delete_from_db(self):
         db.session.delete(self)
         db.session.commit()
+
+    # @require_admin decorator
+    def require_admin(func):
+        @functools.wraps(func)
+        def function_that_runs_func(*args, **kwargs):
+            user_id = get_jwt_identity()
+            if user_id:
+                user = UserModel.find_by_id(user_id)
+                if user and user.is_admin:
+                    return func(*args, **kwargs)
+            return {
+                'error': 'Invalid Credentials'
+            }, 401
+        return function_that_runs_func

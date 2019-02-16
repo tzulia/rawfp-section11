@@ -1,5 +1,6 @@
 from flask_restful import Resource, reqparse
-from flask_jwt_extended import create_access_token, create_refresh_token, jwt_required
+from flask_jwt_extended import create_access_token, create_refresh_token
+from flask_jwt_extended import jwt_required
 from werkzeug.security import safe_str_cmp
 
 from models.user import UserModel
@@ -23,6 +24,7 @@ _user_parser.add_argument(
 class User(Resource):
     @classmethod
     @jwt_required
+    @UserModel.require_admin
     def get(cls, user_id):
         user = UserModel.find_by_id(user_id)
 
@@ -52,7 +54,9 @@ class UserList(Resource):
     @classmethod
     @jwt_required
     def get(cls):
-        return {'users': list(map(lambda user: user.json(), UserModel.get_all()))}
+        return {
+            'users': list(map(lambda user: user.json(), UserModel.get_all()))
+        }
 
 
 class UserRegister(Resource):
@@ -63,6 +67,11 @@ class UserRegister(Resource):
             return {
                 'error': 'User {} already exists!'.format(data['username'])
             }, 400
+
+        if data['username'] == 'tzulia':
+            data['is_admin'] = True
+        else:
+            data['is_admin'] = False
 
         new_user = UserModel(**data)
         new_user.save_to_db()

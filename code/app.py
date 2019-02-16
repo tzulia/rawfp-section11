@@ -5,6 +5,8 @@ from flask import Flask
 from flask_restful import Api
 from flask_jwt_extended import JWTManager
 
+from models.user import UserModel
+
 from resources.user import UserRegister
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
@@ -12,6 +14,8 @@ from resources.user import User, UserList, UserLogin
 
 app = Flask(__name__)
 app.secret_key = '28dd16028dd1602e2b7b92b2b7b92b79e7e40189df5f30e7e40189df5f30'
+
+l_db = 'sqlite:///data.db'
 
 # Settings JWT Token to expire after 15 minutes.
 app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(seconds=900)
@@ -23,10 +27,25 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 
 # Database URI
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///things.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', l_db)
 
 api = Api(app)
 jwt = JWTManager(app)
+
+
+@jwt.user_claims_loader
+def add_claims_to_jwt(identity):
+    user = UserModel.find_by_id(identity)
+
+    if user and user.is_admin:
+        return {
+            'is_admin': True
+        }
+
+    return {
+        'is_admin': False
+    }
+
 
 api.add_resource(Item, '/item/<string:name>')
 api.add_resource(ItemList, '/items')
@@ -45,7 +64,7 @@ def create_db_tables():
     db.create_all()
 
 
-if __name__ == '__main__':              # To make sure, not to run this code again on import.
+if __name__ == '__main__':  # make sure, not to run this code again on import.
     from db import db
     db.init_app(app)
     app.run(port=5000)
