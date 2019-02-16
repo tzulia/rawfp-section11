@@ -3,19 +3,15 @@ import os
 
 from flask import Flask
 from flask_restful import Api
-from flask_jwt import JWT
+from flask_jwt_extended import JWTManager
 
-from security import authenticate, identity
 from resources.user import UserRegister
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
-from resources.user import User, UserList
+from resources.user import User, UserList, UserLogin
 
 app = Flask(__name__)
 app.secret_key = '28dd16028dd1602e2b7b92b2b7b92b79e7e40189df5f30e7e40189df5f30'
-
-# Changing auth url to /auth/login
-app.config['JWT_AUTH_URL_RULE'] = '/auth/login'
 
 # Settings JWT Token to expire after 15 minutes.
 app.config['JWT_EXPIRATION_DELTA'] = datetime.timedelta(seconds=900)
@@ -30,7 +26,7 @@ app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///things.db')
 
 api = Api(app)
-jwt = JWT(app, authenticate, identity)
+jwt = JWTManager(app)
 
 api.add_resource(Item, '/item/<string:name>')
 api.add_resource(ItemList, '/items')
@@ -38,6 +34,7 @@ api.add_resource(ItemList, '/items')
 api.add_resource(Store, '/store/<string:name>')
 api.add_resource(StoreList, '/stores')
 
+api.add_resource(UserLogin, '/auth/login')
 api.add_resource(UserRegister, '/auth/register')
 api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserList, '/users')

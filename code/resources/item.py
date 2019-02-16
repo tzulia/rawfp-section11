@@ -1,5 +1,5 @@
 from flask_restful import Resource, reqparse
-from flask_jwt import jwt_required
+from flask_jwt_extended import jwt_required
 
 from models.item import ItemModel
 from models.store import StoreModel
@@ -10,7 +10,7 @@ class Item(Resource):
     parser.add_argument('price', type=float, required=True, help="This field cannot be left blank!")
     parser.add_argument('store_name', type=str, required=True, help="Every item needs a store_name")
 
-    @jwt_required()
+    @jwt_required
     def get(self, name):
         item = ItemModel.find_by_name(name)
 
@@ -19,7 +19,7 @@ class Item(Resource):
 
         return {'error': 'Item not found'}, 404
 
-    @jwt_required()
+    @jwt_required
     def post(self, name):
         if ItemModel.find_by_name(name):
             return {'error': 'Item already exists!'}, 400
@@ -39,7 +39,7 @@ class Item(Resource):
 
         return new_item.json(), 201
 
-    @jwt_required()
+    @jwt_required
     def put(self, name):
         data = Item.parser.parse_args()
 
@@ -73,7 +73,7 @@ class Item(Resource):
  
             return new_item.json(), 201
 
-    @jwt_required()
+    @jwt_required
     def delete(self, name):
         item = ItemModel.find_by_name(name)
         if not item:
@@ -85,6 +85,6 @@ class Item(Resource):
 
 
 class ItemList(Resource):
-    @jwt_required()
+    @jwt_required
     def get(self):
         return {'items': list(map(lambda item: item.json(), ItemModel.find_all()))}
