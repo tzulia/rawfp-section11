@@ -1,7 +1,6 @@
 from flask_restful import Resource, reqparse
 from flask_jwt_extended import (
-    create_access_token, create_refresh_token, jwt_refresh_token_required,
-    get_jwt_identity
+    create_access_token, create_refresh_token, get_jwt_identity
 )
 from flask_jwt_extended import jwt_required
 from werkzeug.security import safe_str_cmp
@@ -116,16 +115,17 @@ class UserLogin(Resource):
         }, 401
 
 
-class TokenRefresh(Resource):
-    @classmethod
-    @jwt_refresh_token_required
-    def post(cls):
+class UserLogout(Resource):
+    @jwt_required
+    def post(self):
         user_id = get_jwt_identity()
-        new_token = create_access_token(identity=user_id, fresh=False)
+        tokens = BlacklistToken.get_all_tokens_by_user_id(user_id)
 
-        new_blacklist_token = BlacklistToken(new_token)
-        new_blacklist_token.save_to_db()
+        # Revoke all tokens that this user has.
+        for token in tokens:
+            token.revoke()
 
         return {
-            'access_token': new_token
+            'code': 'logout_success',
+            'message': 'User logged out successfully'
         }, 200

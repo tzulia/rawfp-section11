@@ -7,7 +7,8 @@ from flask_jwt_extended import JWTManager
 from resources.user import UserRegister
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
-from resources.user import User, UserList, UserLogin, TokenRefresh
+from resources.user import User, UserList, UserLogin, UserLogout
+from resources.token import TokenRefresh, TokenList
 from models.token_blacklist import BlacklistToken
 
 app = Flask(__name__)
@@ -84,10 +85,15 @@ api.add_resource(Store, '/store/<string:name>')
 api.add_resource(StoreList, '/stores')
 
 api.add_resource(UserLogin, '/auth/login')
+api.add_resource(UserLogout, '/auth/logout')
 api.add_resource(UserRegister, '/auth/register')
 api.add_resource(TokenRefresh, '/auth/refresh')
+api.add_resource(TokenList, '/auth/tokens')
+
 api.add_resource(User, '/user/<int:user_id>')
 api.add_resource(UserList, '/users')
+
+
 
 # Create DB tables, if they do not exists.
 @app.before_first_request

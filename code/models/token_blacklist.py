@@ -29,7 +29,6 @@ class BlacklistToken(db.Model):
 
     def __init__(self, encoded_token):
         decoded_token = decode_token(encoded_token)
-        print(decoded_token)
         self.jti = decoded_token['jti']
         self.token_type = decoded_token['type']
         self.user_identity = int(decoded_token['identity'])
@@ -66,12 +65,14 @@ class BlacklistToken(db.Model):
             t.json() for t in cls.query.limit(filter).all()
         ]
 
-    def revoke_token(self):
+    def revoke(self):
         self.revoked = True
+        self.save_to_db()
         return True
 
-    def unrevoke_token(self):
+    def unrevoke(self):
         self.revoked = False
+        self.save_to_db()
         return True
 
     def save_to_db(self):
