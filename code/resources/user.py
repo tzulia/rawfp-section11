@@ -7,6 +7,7 @@ from flask_jwt_extended import jwt_required
 from werkzeug.security import safe_str_cmp
 
 from models.user import UserModel
+from models.token_blacklist import BlacklistToken
 
 
 _user_parser = reqparse.RequestParser()
@@ -98,6 +99,13 @@ class UserLogin(Resource):
             # create refresh token
             refresh_token = create_refresh_token(identity=user.id)
 
+            # Lets store the tokens in the DB, as non-expired.
+            new_access_token = BlacklistToken(access_token)
+            new_refresh_token = BlacklistToken(refresh_token)
+
+            new_access_token.save_to_db()
+            new_refresh_token.save_to_db()
+
             return {
                 'access_token': access_token,
                 'refresh_token': refresh_token
@@ -114,6 +122,9 @@ class TokenRefresh(Resource):
     def post(cls):
         user_id = get_jwt_identity()
         new_token = create_access_token(identity=user_id, fresh=False)
+
+        new_blacklist_token = BlacklistToken(new_token)
+        new_blacklist_token.save_to_db()
 
         return {
             'access_token': new_token

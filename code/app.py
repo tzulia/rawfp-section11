@@ -8,6 +8,7 @@ from resources.user import UserRegister
 from resources.item import Item, ItemList
 from resources.store import Store, StoreList
 from resources.user import User, UserList, UserLogin, TokenRefresh
+from models.token_blacklist import BlacklistToken
 
 app = Flask(__name__)
 app.secret_key = '28dd16028dd1602e2b7b92b2b7b92b79e7e40189df5f30e7e40189df5f30'
@@ -23,8 +24,17 @@ app.config['PROPAGATE_EXCEPTIONS'] = True
 # Database URI
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', l_db)
 
+# Enable Token Blacklist
+app.config['JWT_BLACKLIST_ENABLED'] = True
+app.config['JWT_BLACKLIST_CHECKS'] = ['access', 'refresh']
+
 api = Api(app)
 jwt = JWTManager(app)
+
+
+@jwt.token_in_blacklist_loader
+def token_in_blacklist_callback(decoded_token):
+    return BlacklistToken.is_token_revoked(decoded_token)
 
 
 @jwt.expired_token_loader

@@ -1,4 +1,4 @@
-import functools
+from functools import wraps
 
 from db import db
 from flask_jwt_extended import get_jwt_identity
@@ -12,6 +12,8 @@ class UserModel(db.Model):
     password = db.Column(db.String(80), nullable=False)
     is_admin = db.Column(db.Boolean)
 
+    tokens = db.relationship('BlacklistToken', lazy='dynamic')
+
     def __init__(self, username, password, is_admin):
         self.username = username
         self.password = password
@@ -21,7 +23,8 @@ class UserModel(db.Model):
         return {
             'id': self.id,
             'username': self.username,
-            'is_admin': self.is_admin
+            'is_admin': self.is_admin,
+            'tokens': [t.json() for t in self.tokens.limit(10).all()]
         }
 
     @classmethod
@@ -49,7 +52,7 @@ class UserModel(db.Model):
 
     # @require_admin decorator
     def require_admin(func):
-        @functools.wraps(func)
+        @wraps(func)
         def function_that_runs_func(*args, **kwargs):
             user_id = get_jwt_identity()
             if user_id:
